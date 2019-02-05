@@ -1,0 +1,27 @@
+---
+name: VMZoneCheck
+description: "Pause VMs running in a zone, if the image running is not allowed to run in that zone."
+rules:
+  -
+    comment: "create a nec_jp_server table entry for any active VM associated to the nec_jp security group"
+    rule: >
+      nec_jp_server(x) :-
+        nova:servers(id=x,status='ACTIVE'),
+        neutronv2:ports(id, device_id, status='ACTIVE'),
+        neutronv2:security_group_port_bindings(id, sg),
+        neutronv2:security_groups(sg,name='nec_jp')
+  -
+    comment: "find NEC_JP VMs which are running images not tagged for “allowed in NEC JP”"
+    rule: >
+      nec_jp_placement_error(id) :-
+        nova:servers(id,name,hostId,status,tenant_id,user_id,image,flavor,az,hh),
+        not glancev2:tags(image,'nec_jp'),
+        nec_jp_server(id)
+
+  -
+    comment: "pause any VM that shows up in the nec_jp_placement_error table"
+    rule: >
+      execute[nova:servers.pause(id)] :-
+        nec_jp_placement_error(id),
+        nova:servers(id,status='ACTIVE')
+

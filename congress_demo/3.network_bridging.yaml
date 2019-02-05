@@ -1,0 +1,38 @@
+---
+name: NetworkBridging
+description: "Detects when a VM is connected to 2 networks with different security levels and pause that VM"
+rules:
+  -
+    comment: "Create dmz_server rule"
+    rule: >
+      dmz_connected(x) :-
+        neutronv2:ports(network_id=z, device_id=x),
+        neutronv2:networks(id=z, tenant_id=w, name="test_dmz"),
+        keystone:tenants(enabled, desc, name="admin", id=w)
+  -
+    comment: "Create admin_connected rule"
+    rule: >
+      admin_connected(x) :-
+        neutronv2:ports(network_id=z, device_id=x),
+        neutronv2:networks(id=z, tenant_id=w, name="test_admin"),
+        keystone:tenants(enabled, desc, name="admin", id=w)
+  -
+    comment: "Create dmz_admin_connected rule"
+    rule: >
+      dmz_admin_connected(x) :-
+        dmz_connected(x),
+        admin_connected(x)
+  -
+    comment: "Create dmz_admin_bridging_error rule"
+    rule: >
+      dmz_admin_bridging_error(id) :-
+        dmz_admin_connected(id),
+        nova:servers(id,image_id=y),
+        not glancev2:tags(y,"bridging-authorized")
+  -
+    comment: "Create paused_dmz_admin_bridging_error rule"
+    rule: >
+      execute[nova:servers.pause(id)] :-
+        dmz_admin_bridging_error(id),
+        nova:servers(id,status="ACTIVE")
+

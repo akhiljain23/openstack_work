@@ -1,0 +1,30 @@
+---
+name: ReservedSubnet
+description: "Delete any subnets created in restricted network ranges."
+rules:
+  -
+    comment: "create a reserved_subnet_error table entry for any subnet created with this CIDR"
+    rule: >
+      reserved_subnet_error(x) :-
+        neutronv2:subnets(id=x, cidr='10.7.1.0/24')
+  -
+    comment: "create a reserved_subnet_error table entry for any subnet created with this CIDR"
+    rule: >
+      reserved_subnet_error(x) :-
+        neutronv2:subnets(id=x, cidr='10.7.11.0/24')
+  -
+    comment: "create a reserved_subnet_error table entry for any subnet created with this CIDR"
+    rule: >
+      reserved_subnet_error(x) :-
+        neutronv2:subnets(id=x, cidr='10.7.12.0/24')
+  -
+    comment: "create a reserved_subnet_error table entry for any subnet created with this CIDR"
+    rule: >
+      reserved_subnet_error(x) :-
+        neutronv2:subnets(id=x, cidr='10.7.13.0/24')
+  -
+    comment: "delete any subnet that shows up in the reserved_subnet_error table "
+    rule: >
+      execute[neutronv2:delete_subnet(x)] :-
+        reserved_subnet_error(x)
+

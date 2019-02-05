@@ -1,0 +1,16 @@
+---
+name: SMTP_Ingress
+description: "Identify VMs that have TCP port 25 open for ingress."
+rules:
+  -
+    comment: "create an smtp_ingress table entry for any VM in a security group with TCP port 25 open for ingress"
+    rule: >
+      "smtp_ingress(x) :-
+        nova:servers(id=x,status='ACTIVE'),
+        neutronv2:ports(port_id, status='ACTIVE'),
+        neutronv2:security_groups(sg, tenant_id, sgn, sgd),
+        neutronv2:security_group_port_bindings(port_id, sg),
+        neutronv2:security_group_rules(sg, rule_id, tenant_id, remote_group_id, 'ingress', ethertype, 'tcp', port_range_min, port_range_max, remote_ip),
+        lt(port_range_min, 26),
+        gt(port_range_max, 24)
+

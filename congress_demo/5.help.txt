@@ -1,0 +1,14 @@
+neutron net-create test_public --router:external=true
+neutron net-list
+neutron subnet-create --disable-dhcp test_public 10.7.1.0/24 --name test_public
+neutron net-list
+neutron subnet-list
+neutron net-create test_internal
+neutron subnet-create test_internal 10.7.12.0/24 --name test_internal --gateway 10.7.12.1 --enable-dhcp --allocation-pool start=10.7.12.2,end=10.7.12.254 --dns-nameserver 8.8.8.8
+neutron net-list
+neutron subnet-list
+git clone https://github.com/akhiljain23/openstack_work.git
+cd openstack_work/congress_demo/
+openstack congress policy create-from-file 5.reserved_subnet.yaml 
+openstack congress policy row list ReservedSubnet reserved_subnet_error
+neutron subnet-list

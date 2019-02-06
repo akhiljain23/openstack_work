@@ -1,0 +1,23 @@
+neutron net-list
+neutron net-show eb65c89f-a4d1-4ced-a716-305d8bffa839
+neutron floatingip-create public
+neutron floatingip-show 3998168d-3457-4453-8347-0d2f544499d2 
+neutron net-delete test_internal
+neutron net-create test_internal
+neutron subnet-create test_internal 10.0.0.0/24 --name test_internal --gateway 10.0.0.1 --enable-dhcp --allocation-pool start=10.0.0.2,end=10.0.0.254 --dns-nameserver 8.8.8.8
+neutron router-create test_router
+neutron router-gateway-set test_router public
+neutron router-interface-add test_router subnet=test_internal
+neutron net-list
+neutron security-group-list
+neutron security-group-create smtp_ingress
+neutron security-group-rule-create --direction ingress --protocol=TCP --port-range-min=25 --port-range-max=25 smtp_ingress
+openstack image list
+neutron net-list   # test_internal
+nova boot --flavor m1.tiny --image cirros-0.4.0-x86_64-disk --nic net-id=c67948e3-eca0-4bd5-aa29-83990362c198 --security-groups smtp_ingress cirros1
+openstack server list
+neutron floatingip-show 3998168d-3457-4453-8347-0d2f544499d2 
+openstack server add floating ip cirros1 172.24.4.8
+openstack congress policy create-from-file 4.smtp_ingress.yaml 
+openstack congress policy row list SMTP_Ingress smtp_ingress
+openstack congress datasource row list nova servers

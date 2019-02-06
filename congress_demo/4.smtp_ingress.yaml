@@ -5,7 +5,7 @@ rules:
   -
     comment: "create an smtp_ingress table entry for any VM in a security group with TCP port 25 open for ingress"
     rule: >
-      "smtp_ingress(x) :-
+      smtp_ingress(x) :-
         nova:servers(id=x,status='ACTIVE'),
         neutronv2:ports(port_id, status='ACTIVE'),
         neutronv2:security_groups(sg, tenant_id, sgn, sgd),
